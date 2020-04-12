@@ -37,7 +37,7 @@ Receiving messages
 
 import sys
 from subprocess import Popen, PIPE
-from select import epoll, EPOLLIN, EPOLLERR, EPOLLHUP
+from select import poll, POLLIN, POLLERR, POLLHUP
 import struct
 from time import time, sleep
 
@@ -46,7 +46,7 @@ start = time()
 # Constants
 student_id = "r0634191"
 printing = False
-hosts =("andenne","ans","antwerpen","asse","aubel","balen","bastogne","bebe","bergen","beringen","bevekom","beveren","bierbeek","bilzen","bobo","borgworm","brugge","chimay","ciney","couvin","damme","dilbeek","dour","eeklo","ertvelde","fleurus","geel","gouvy","haacht","hakuna","halle","ham","hamme","hasselt","hastiere","heers","herent","herstal","heverlee","hoei","hove","jemeppe","kaprijke","knokke","komen","kortrijk","laarne","lanaken","libin","libramont","lint","lommel","luik","malle","marche","moeskroen","mol","musson","namen","ninove","ohey","olen","one","orval","ottignies","overpelt","peer","perwez","pittem","riemst","rixensart","roeselare","ronse","schoten","seraing","spa","stavelot","temse","terhulpen","torhout","tremelo","tubize","two","verviers","veurne","vielsalm","vilvoorde","virton","voeren","waterloo","yvoir","zwalm") # 81 machines, 324 cores
+hosts =("andenne","ans","antwerpen","asse","aubel","balen","bastogne","bergen","beringen","bevekom","beveren","bierbeek","bilzen","borgworm","brugge","chimay","ciney","couvin","damme","dilbeek","dour","eeklo","ertvelde","fleurus","geel","gouvy","haacht","halle","ham","hamme","hasselt","hastiere","heers","herent","herstal","hoei","hove","jemeppe","kaprijke","knokke","komen","kortrijk","laarne","lanaken","libin","libramont","lint","lommel","luik","malle","marche","moeskroen","mol","musson","namen","ninove","ohey","olen","orval","ottignies","overpelt","peer","perwez","pittem","riemst","rixensart","roeselare","ronse","schoten","seraing","spa","stavelot","temse","terhulpen","torhout","tremelo","tubize","verviers","veurne","vielsalm","vilvoorde","virton","voeren","waterloo","yvoir","zwalm") # 81 machines, 324 cores
 processes_per_host = 4
 max_connections_attempts = 10
 reconnect_delay = 0.01
@@ -69,7 +69,7 @@ def open_connection(host, attempts, connections, poll_object):
 		"attempts": attempts,
 		"request_ids": []
 	}
-	poll_object.register(p.stdout, eventmask=EPOLLIN | EPOLLERR | EPOLLHUP)
+	poll_object.register(p.stdout, eventmask=POLLIN | POLLERR | POLLHUP)
 
 def reset_connection(fd, connections, poll_object, requests):
 	
@@ -164,7 +164,7 @@ def main():
 	# Copy dependencies with rsync if necessary
 	copy_dependencies = (len(sys.argv) > 2)
 	if copy_dependencies:
-		dependencies_rsync = Popen(["rsync", "-e", "ssh -o 'ProxyCommand ssh -q cs nc aalst.cs.kotnet.kuleuven.be 22' -l %s"%student_id, "--update", "--delete", "--archive", sys.argv[2], "cs-aalst:/home/%s/anet/dependencies"%student_id])
+		dependencies_rsync = Popen(["rsync", "-e", "ssh -o 'ProxyCommand ssh -q cs nc ans.cs.kotnet.kuleuven.be 22' -l %s"%student_id, "--update", "--delete", "--archive", sys.argv[2], "cs-ans:/home/%s/anet/dependencies"%student_id])
 
 	# Read requests
 	with open(sys.argv[1], "r") as f:
@@ -178,7 +178,7 @@ def main():
 		})
 	
 	# Start SSH connections
-	poll_object = epoll()
+	poll_object = poll()
 	connections = {} # A dictionary mapping file descriptors to [process, host, attempts, request_id]-dictionaries. Host is used to reopen connection upon failure. Attempts keeps track of how many failed attempts to connect have occurred. If attempts is -1, this indicates that the connection opened correctly.
 	for host in hosts:
 		
@@ -209,13 +209,13 @@ def main():
 		for fd, event in events:
 			
 			connection = connections[fd]
-			if event & (EPOLLERR | EPOLLHUP):
+			if event & (POLLERR | POLLHUP):
 				
 				# ERR or HUP occurred
 				# Restart connection
 				reset_connection(fd, connections, poll_object, requests)
 			
-			elif event & EPOLLIN:
+			elif event & POLLIN:
 				
 				# Received output
 				
