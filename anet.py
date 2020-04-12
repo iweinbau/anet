@@ -44,9 +44,9 @@ from time import time, sleep
 start = time()
 
 # Constants
-student_id = "r0597343"
+student_id = "r0634191"
 printing = False
-hosts = ("aalst", "aarlen", "alken", "amay", "andenne", "ans", "asse", "aubel", "bastogne", "bergen", "beringen", "beveren", "bilzen", "binche", "borgworm", "brugge", "charleroi", "ciney", "couvin", "damme", "diest", "dilbeek", "dinant", "doornik", "durbuy", "eeklo", "eupen", "fleurus", "geel", "genk", "gent", "gouvy", "haacht", "halle", "ham", "hamme", "hasselt", "hastiere", "heist", "herent", "herstal", "hoei", "ieper", "jemeppe", "kaprijke", "knokke", "komen", "kortrijk", "lanaken", "libin", "lier", "lint", "luik", "maaseik", "malle", "marche", "mechelen", "mol", "namen", "nijvel", "ninove", "ohey", "orval", "overpelt", "peer", "perwez", "pittem", "seraing", "stavelot", "terhulpen", "tienen", "tubize", "turnhout", "verviers", "vielsalm", "vilvoorde", "virton", "voeren", "waterloo", "waver", "zwalm") # 81 machines, 324 cores
+hosts =("andenne","ans","antwerpen","asse","aubel","balen","bastogne","bebe","bergen","beringen","bevekom","beveren","bierbeek","bilzen","bobo","borgworm","brugge","chimay","ciney","couvin","damme","dilbeek","dour","eeklo","ertvelde","fleurus","geel","gouvy","haacht","hakuna","halle","ham","hamme","hasselt","hastiere","heers","herent","herstal","heverlee","hoei","hove","jemeppe","kaprijke","knokke","komen","kortrijk","laarne","lanaken","libin","libramont","lint","lommel","luik","malle","marche","moeskroen","mol","musson","namen","ninove","ohey","olen","one","orval","ottignies","overpelt","peer","perwez","pittem","riemst","rixensart","roeselare","ronse","schoten","seraing","spa","stavelot","temse","terhulpen","torhout","tremelo","tubize","two","verviers","veurne","vielsalm","vilvoorde","virton","voeren","waterloo","yvoir","zwalm") # 81 machines, 324 cores
 processes_per_host = 4
 max_connections_attempts = 10
 reconnect_delay = 0.01
