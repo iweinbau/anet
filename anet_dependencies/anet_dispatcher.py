@@ -11,7 +11,7 @@ import sys
 from os import fdopen
 import struct
 from subprocess import Popen, PIPE, call
-from select import epoll, EPOLLIN, EPOLLERR, EPOLLHUP
+from select import poll, POLLIN, POLLERR, POLLHUP
 
 # Set-up
 student_id = "r0634191"
@@ -21,8 +21,8 @@ sys.stdout.write(magic_string)
 sys.stdout.flush()
 processes = {} # A dictionary mapping process.stdout.name to [process, request_id]-dictionaries
 unbuffered_stdin = fdopen(sys.stdin.fileno(), "rb", 0) # We create a separate reader which doesn't buffer, so epoll always knows if there is actually data left to be read
-poll_object = epoll()
-poll_object.register(unbuffered_stdin, eventmask=EPOLLIN | EPOLLERR | EPOLLHUP)
+poll_object = poll()
+poll_object.register(unbuffered_stdin, POLLIN | POLLERR | POLLHUP)
 should_run = True
 
 while should_run:
@@ -37,13 +37,13 @@ while should_run:
 			
 			# Event comes from standard input stream
 			
-			if event & (EPOLLERR | EPOLLHUP):
+			if event & (POLLERR | POLLHUP):
 				
 				# Connection ended, kill dispatcher
 				should_run = False
 				break
 				
-			elif event & EPOLLIN:
+			elif event & POLLIN:
 				
 				# Received new message
 				message_type = struct.unpack("I", unbuffered_stdin.read(4))[0]
@@ -52,12 +52,15 @@ while should_run:
 					# Start new process
 					command_length = struct.unpack("I", unbuffered_stdin.read(4))[0]
 					command = unbuffered_stdin.read(command_length).decode("utf-8")
+					if printing:
+						sys.stderr.write("New Request: " + command + "\n")
+						sys.stderr.flush()
 					p = Popen("cd /home/%s/anet/ ; exec %s"%(student_id, command), bufsize=0, shell=True, stdout=PIPE) # exec is necessary to not spawn a separate shell, allows us to kill actual process
 					processes[p.stdout.fileno()] = {
 						"process": p,
 						"request_id": request_id
 					}
-					poll_object.register(p.stdout, eventmask=EPOLLIN | EPOLLERR | EPOLLHUP)
+					poll_object.register(p.stdout, POLLIN | POLLERR | POLLHUP)
 				elif message_type == 1:
 					# Kill process
 					p = None
@@ -86,14 +89,14 @@ while should_run:
 				sys.stderr.write("Wrote request ID: " + str(struct.pack("I", process["request_id"])) + "\n")
 				sys.stderr.flush()
 			
-			if event & EPOLLERR:
+			if event & POLLERR:
 				
 				# Crash occurred
 				sys.stdout.buffer.write(struct.pack("I", -1)) # Return 0
 			
-			elif event & (EPOLLIN | EPOLLHUP):
+			elif event & (POLLIN | POLLHUP):
 				
-				# Program finished (or in the case of EPOLLIN, will finish soon but we can't wait for EPOLLHUP since the OS buffer may fill up and block the child process)
+				# Program finished (or in the case of POLLIN, will finish soon but we can't wait for POLLHUP since the OS buffer may fill up and block the child process)
 				response = process["process"].stdout.read()
 				process["process"].communicate()
 				if process["process"].returncode != 0:

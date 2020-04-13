@@ -47,9 +47,11 @@ start = time()
 student_id = "r0634191"
 printing = False
 hosts =("andenne","ans","antwerpen","asse","aubel","balen","bastogne","bergen","beringen","bevekom","beveren","bierbeek","bilzen","borgworm","hamme","hasselt","hastiere","heers","herent","herstal","hoei","hove","jemeppe","kaprijke","knokke","komen","kortrijk","laarne","lanaken","libin","libramont","lint","lommel","luik","malle","marche","moeskroen","mol","musson","namen","ninove","ohey") # 81 machines, 324 cores
+
+
 processes_per_host = 4
 max_connections_attempts = 10
-reconnect_delay = 0.1
+reconnect_delay = 0.01
 magic_string = "anet_dispatcher started successfully."
 
 # Functions
