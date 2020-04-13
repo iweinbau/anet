@@ -46,10 +46,10 @@ start = time()
 # Constants
 student_id = "r0634191"
 printing = False
-hosts =("andenne","ans","antwerpen","asse","aubel","balen","bastogne","bergen","beringen","bevekom","beveren","bierbeek","bilzen","borgworm","brugge","chimay","ciney","couvin","damme","dilbeek","dour","eeklo","ertvelde","fleurus","geel","gouvy","haacht","halle","ham","hamme","hasselt","hastiere","heers","herent","herstal","hoei","hove","jemeppe","kaprijke","knokke","komen","kortrijk","laarne","lanaken","libin","libramont","lint","lommel","luik","malle","marche","moeskroen","mol","musson","namen","ninove","ohey","olen","orval","ottignies","overpelt","peer","perwez","pittem","riemst","rixensart","roeselare","ronse","schoten","seraing","spa","stavelot","temse","terhulpen","torhout","tremelo","tubize","verviers","veurne","vielsalm","vilvoorde","virton","voeren","waterloo","yvoir","zwalm") # 81 machines, 324 cores
+hosts =("andenne","ans","antwerpen","asse","aubel","balen","bastogne","bergen","beringen","bevekom","beveren","bierbeek","bilzen","borgworm","hamme","hasselt","hastiere","heers","herent","herstal","hoei","hove","jemeppe","kaprijke","knokke","komen","kortrijk","laarne","lanaken","libin","libramont","lint","lommel","luik","malle","marche","moeskroen","mol","musson","namen","ninove","ohey") # 81 machines, 324 cores
 processes_per_host = 4
 max_connections_attempts = 10
-reconnect_delay = 0.01
+reconnect_delay = 0.1
 magic_string = "anet_dispatcher started successfully."
 
 # Functions
@@ -69,7 +69,7 @@ def open_connection(host, attempts, connections, poll_object):
 		"attempts": attempts,
 		"request_ids": []
 	}
-	poll_object.register(p.stdout, eventmask=POLLIN | POLLERR | POLLHUP)
+	poll_object.register(p.stdout, POLLIN | POLLERR | POLLHUP)
 
 def reset_connection(fd, connections, poll_object, requests):
 	
@@ -184,11 +184,15 @@ def main():
 		
 		# Open new connection
 		open_connection(host, 0, connections, poll_object)
-		
+        
+        
 		# Check if we still need more connections
 		if len(connections) >= len(requests):
 			break
+		
+		sleep(reconnect_delay)
 
+            
 	# Wait for rsync to finish if necessary
 	if copy_dependencies:
 		dependencies_rsync.wait()
